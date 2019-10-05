@@ -11,9 +11,10 @@ bool gameloop = true;
 
 void Init();
 void UpdateGrid();
-bool winJudge(int r, int c);
+void WinJudge(int r, int c);
 void Insert();
 void Replay();
+void DrawCheck();
 
 int main() {
 	while (gameloop) {
@@ -21,8 +22,7 @@ int main() {
 		while (!gameover) {
 			Insert();
 		}
-		cout << "Player" << currentPlayer + 1 << " win!\n";
-		//system("pause");
+		//cout << "Player" << currentPlayer + 1 << " win!\n";
 		Replay();
 	}
 	return 0;
@@ -59,20 +59,21 @@ void UpdateGrid() {
 	}
 }
 
-bool winJudge(int r, int c) {
+void WinJudge(int r, int c) {
 	int combo = 1;
 	int currentR = r;
 	int currentC = c;
 
 	while (true) { //judge vertical
 		r++;
-		if (combo == 4) {
-			return true;
-		}
 		if (grid[currentR][currentC] == grid[r][currentC] && r < 6) {
 			combo++;
 		}
 		else {
+			if (combo == 4) {
+				cout << "Player" << currentPlayer + 1 << " win!\n";
+				gameover = true;
+			}
 			r = currentR;
 			combo = 1;
 			break;
@@ -91,14 +92,15 @@ bool winJudge(int r, int c) {
 	}
 	while (true) { //judge horizontal right
 		c++;
-		if (combo >= 4) {
-			return true;
-		}
 		if (grid[currentR][currentC] == grid[currentR][c] && c < 7) {
 			combo++;
 		}
 		else {
 			c = currentC;
+			if (combo >= 4) {
+				cout << "Player" << currentPlayer + 1 << " win!\n";
+				gameover = true;
+			}
 			combo = 1;
 			break;
 		}
@@ -119,13 +121,14 @@ bool winJudge(int r, int c) {
 	while (true) { //judge diagonal1 upper right
 		c++;
 		r--;
-		if (combo >= 4) {
-			return true;
-		}
 		if (grid[currentR][currentC] == grid[r][c] && c < 7 && r >= 0) {
 			combo++;
 		}
 		else {
+			if (combo >= 4) {
+				cout << "Player" << currentPlayer + 1 << " win!\n";
+				gameover = true;
+			}
 			c = currentC;
 			r = currentR;
 			combo = 1;
@@ -148,28 +151,27 @@ bool winJudge(int r, int c) {
 	while (true) { //judge diagonal2 lower right
 		c++;
 		r++;
-		if (combo >= 4) {
-			return true;
-		}
 		if (grid[currentR][currentC] == grid[r][c] && c < 7 && r < 6) {
 			combo++;
 		}
 		else {
+			if (combo >= 4) {
+				cout << "Player" << currentPlayer + 1 << " win!\n";
+				gameover = true;
+			}
 			c = currentC;
 			r = currentR;
 			combo = 1;
 			break;
 		}
 	}
-
-	return false;
 }
 
 void Insert() {
 	cout << "Player" << currentPlayer + 1 << "'s turn!\n";
 	cout << "Input column number:";
 	cin >> col;
-	if (cin.fail()) {
+	if (cin.fail()) { //check input
 		cin.clear();
 		cin.ignore(100, '\n');
 		cout << "Please input number!\n";
@@ -185,13 +187,15 @@ void Insert() {
 			if (currentPlayer) {
 				grid[i][col] = 'X';
 				UpdateGrid();
-				gameover = winJudge(i, col);
+				WinJudge(i, col);
+				DrawCheck();
 				break;
 			}
 			else {
 				grid[i][col] = 'O';
 				UpdateGrid();
-				gameover = winJudge(i, col);
+				WinJudge(i, col);
+				DrawCheck();
 				break;
 			}
 		}
@@ -203,6 +207,15 @@ void Insert() {
 	currentPlayer = !currentPlayer;
 }
 
+void DrawCheck() {
+	for (int i = 0; i < 7; i++) {
+		if (grid[0][i] == '.') {
+			return;
+		}
+	}
+	cout << "Draw!\n";
+	gameover = true;
+}
 
 void Replay() {
 	while (true) {
