@@ -2,12 +2,18 @@
 
 using namespace std;
 
-char grid[6][7] = {};
+char grid[20][20] = {};
 char confirm;
 int col = 0;
+int rowNum = 6;
+int colNum = 7;
+int winNum = 4;
 bool gameover = false;
 bool currentPlayer = false;
 bool gameloop = true;
+bool isWarpMode;
+bool isDropMode;
+bool isVSCom;
 
 void Init();
 void UpdateGrid();
@@ -15,9 +21,12 @@ void WinJudge(int r, int c);
 void Insert();
 void Replay();
 void DrawCheck();
+void CustomRule(); 
+bool IntInputCheck(int num, int min, int max);
 
 int main() {
 	while (gameloop) {
+		CustomRule();
 		Init();
 		while (!gameover) {
 			Insert();
@@ -28,34 +37,42 @@ int main() {
 	return 0;
 }
 
+
+
 void Init() {
 	system("CLS");
 	gameover = false;
 	currentPlayer = false;
-	for (int i = 0; i < 7; i++) {
-		cout << i + 1 << " ";
-	}
-	cout << "\n";
-	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 7; j++) {
-			grid[i][j] = '.';
-			cout << grid[i][j] << " ";
+	for (int i = 0; i < colNum; i++) {
+		if (i >= 9) {
+			cout << i + 1 << " ";
 		}
-		cout << "\n";
+		else cout << i + 1 << "  ";
+	}
+	cout << "\n\n";
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) {
+			grid[i][j] = '.';
+			cout << grid[i][j] << "  ";
+		}
+		cout << "\n\n";
 	}
 }
 
 void UpdateGrid() {
 	system("CLS");
-	for (int i = 0; i < 7; i++) {
-		cout << i + 1 << " ";
-	}
-	cout << "\n";
-	for (int i = 0; i < 6; i++) {
-		for (int j = 0; j < 7; j++) {
-			cout << grid[i][j] << " ";
+	for (int i = 0; i < colNum; i++) {
+		if (i >= 9) {
+			cout << i + 1 << " ";
 		}
-		cout << "\n";
+		else cout << i + 1 << "  ";
+	}
+	cout << "\n\n";
+	for (int i = 0; i < rowNum; i++) {
+		for (int j = 0; j < colNum; j++) {
+			cout << grid[i][j] << "  ";
+		}
+		cout << "\n\n";
 	}
 }
 
@@ -66,11 +83,11 @@ void WinJudge(int r, int c) {
 
 	while (true) { //judge vertical
 		r++;
-		if (grid[currentR][currentC] == grid[r][currentC] && r < 6) {
+		if (grid[currentR][currentC] == grid[r][currentC] && r < rowNum) {
 			combo++;
 		}
 		else {
-			if (combo == 4) {
+			if (combo >= winNum) {
 				cout << "Player" << currentPlayer + 1 << " win!\n";
 				gameover = true;
 			}
@@ -92,12 +109,12 @@ void WinJudge(int r, int c) {
 	}
 	while (true) { //judge horizontal right
 		c++;
-		if (grid[currentR][currentC] == grid[currentR][c] && c < 7) {
+		if (grid[currentR][currentC] == grid[currentR][c] && c < colNum) {
 			combo++;
 		}
 		else {
 			c = currentC;
-			if (combo >= 4) {
+			if (combo >= winNum) {
 				cout << "Player" << currentPlayer + 1 << " win!\n";
 				gameover = true;
 			}
@@ -109,7 +126,7 @@ void WinJudge(int r, int c) {
 	while (true) { //judge diagonal1 lower left 
 		c--;
 		r++;
-		if (grid[currentR][currentC] == grid[r][c] && c >= 0 && r < 6) {
+		if (grid[currentR][currentC] == grid[r][c] && c >= 0 && r < rowNum) {
 			combo++;
 		}
 		else {
@@ -121,11 +138,11 @@ void WinJudge(int r, int c) {
 	while (true) { //judge diagonal1 upper right
 		c++;
 		r--;
-		if (grid[currentR][currentC] == grid[r][c] && c < 7 && r >= 0) {
+		if (grid[currentR][currentC] == grid[r][c] && c < colNum && r >= 0) {
 			combo++;
 		}
 		else {
-			if (combo >= 4) {
+			if (combo >= winNum) {
 				cout << "Player" << currentPlayer + 1 << " win!\n";
 				gameover = true;
 			}
@@ -151,11 +168,11 @@ void WinJudge(int r, int c) {
 	while (true) { //judge diagonal2 lower right
 		c++;
 		r++;
-		if (grid[currentR][currentC] == grid[r][c] && c < 7 && r < 6) {
+		if (grid[currentR][currentC] == grid[r][c] && c < colNum && r < rowNum) {
 			combo++;
 		}
 		else {
-			if (combo >= 4) {
+			if (combo >= winNum) {
 				cout << "Player" << currentPlayer + 1 << " win!\n";
 				gameover = true;
 			}
@@ -165,6 +182,16 @@ void WinJudge(int r, int c) {
 			break;
 		}
 	}
+}
+
+void DrawCheck() {
+	for (int i = 0; i < 7; i++) { //check 1st row only
+		if (grid[0][i] == '.') {
+			return;
+		}
+	}
+	cout << "Draw!\n";
+	gameover = true;
 }
 
 void Insert() {
@@ -177,12 +204,12 @@ void Insert() {
 		cout << "Please input number!\n";
 		return;
 	}
-	if (col < 1 || col > 7) {
+	if (col < 1 || col > colNum) {
 		cout << "Invalid number!\n";
 		return;
 	}
 	col--;
-	for (int i = 5; i >= 0; i--) {
+	for (int i = rowNum-1; i >= 0; i--) {
 		if (grid[i][col] == '.') {
 			if (currentPlayer) {
 				grid[i][col] = 'X';
@@ -207,16 +234,6 @@ void Insert() {
 	currentPlayer = !currentPlayer;
 }
 
-void DrawCheck() {
-	for (int i = 0; i < 7; i++) {
-		if (grid[0][i] == '.') {
-			return;
-		}
-	}
-	cout << "Draw!\n";
-	gameover = true;
-}
-
 void Replay() {
 	while (true) {
 		cout << "Play again? Input Y/N";
@@ -229,4 +246,55 @@ void Replay() {
 			break;
 		}
 	}
+}
+
+void CustomRule() {
+	while (true) {
+		cout << "Reset grid and win required? Input Y/N";
+		cin >> confirm;
+		if (confirm == 'Y' || confirm == 'y') {
+			while (true) {
+				cout << "Input row number(4~20):";
+				cin >> rowNum;
+				if (!IntInputCheck(rowNum, 4, 20)) {
+					continue;
+				}
+				else break;
+			}
+			while (true) {
+				cout << "Input colunm number(4~20):";
+				cin >> colNum;
+				if (!IntInputCheck(colNum, 4, 20)) {
+					continue;
+				}
+				else break;
+			}
+			while (true) {
+				cout << "Input number required to win(3~20):";
+				cin >> winNum;
+				if (!IntInputCheck(winNum, 3, 20)) {
+					continue;
+				}
+				else break;
+			}
+			return;
+		}
+		else if (confirm == 'N' || confirm == 'n') {
+			return;
+		}
+	}
+}
+
+bool IntInputCheck(int num, int min, int max) {
+	if (cin.fail()) { //check input
+		cin.clear();
+		cin.ignore(100, '\n');
+		cout << "Please input number!\n";
+		return false;
+	}
+	else if (num<min || num>max) {
+		cout << "Invalid number!\n";
+		return false;
+	}
+	else return true;
 }
