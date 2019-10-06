@@ -170,6 +170,9 @@ void WinJudge(int r, int c) {
 	while (true) { //judge diagonal2 upper left 
 		c--;
 		r--;
+		if (isWarpMode && c < 0) {
+			c += colNum;
+		}
 		if (grid[currentR][currentC] == grid[r][c] && c >= 0 && r >= 0) {
 			combo++;
 		}
@@ -182,6 +185,9 @@ void WinJudge(int r, int c) {
 	while (true) { //judge diagonal2 lower right
 		c++;
 		r++;
+		if (isWarpMode && c >= colNum) {
+			c -= colNum;
+		}
 		if (grid[currentR][currentC] == grid[r][c] && c < colNum && r < rowNum) {
 			combo++;
 		}
