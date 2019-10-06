@@ -21,12 +21,14 @@ void WinJudge(int r, int c);
 void Insert();
 void Replay();
 void DrawCheck();
-void CustomRule(); 
+void CustomRule();
+void WarpMode();
 bool IntInputCheck(int num, int min, int max);
 
 int main() {
 	while (gameloop) {
 		CustomRule();
+		WarpMode();
 		Init();
 		while (!gameover) {
 			Insert();
@@ -99,6 +101,9 @@ void WinJudge(int r, int c) {
 
 	while (true) { //judge horizontal left
 		c--;
+		if (isWarpMode && c < 0) {
+			c += colNum;
+		}
 		if (grid[currentR][currentC] == grid[currentR][c] && c >= 0) {
 			combo++;
 		}
@@ -109,6 +114,9 @@ void WinJudge(int r, int c) {
 	}
 	while (true) { //judge horizontal right
 		c++;
+		if (isWarpMode && c >= colNum) {
+			c -= colNum;
+		}
 		if (grid[currentR][currentC] == grid[currentR][c] && c < colNum) {
 			combo++;
 		}
@@ -273,6 +281,18 @@ void CustomRule() {
 		else if (confirm == 'N' || confirm == 'n') {
 			return;
 		}
+	}
+}
+
+void WarpMode() {
+	cout << "Activate warp mode? Input Y/N";
+	cin >> confirm;
+	if (confirm == 'Y' || confirm == 'y') {
+		isWarpMode = true;
+	}
+	else if (confirm == 'N' || confirm == 'n') {
+		isWarpMode = false;
+		return;
 	}
 }
 
