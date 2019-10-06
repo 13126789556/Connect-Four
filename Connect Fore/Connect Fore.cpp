@@ -198,16 +198,7 @@ void Insert() {
 	cout << "Player" << currentPlayer + 1 << "'s turn!\n";
 	cout << "Input column number:";
 	cin >> col;
-	if (cin.fail()) { //check input
-		cin.clear();
-		cin.ignore(100, '\n');
-		cout << "Please input number!\n";
-		return;
-	}
-	if (col < 1 || col > colNum) {
-		cout << "Invalid number!\n";
-		return;
-	}
+	if (!IntInputCheck(col, 1, colNum)) return;
 	col--;
 	for (int i = rowNum-1; i >= 0; i--) {
 		if (grid[i][col] == '.') {
