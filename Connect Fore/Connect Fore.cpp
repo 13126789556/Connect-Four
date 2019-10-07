@@ -17,12 +17,11 @@ bool isVSCom;
 
 void Init();
 void UpdateGrid();
-void WinJudge(int r, int c);
+bool WinJudge(int r, int c);
 void Insert();
+void Remove(float col);
 bool DrawCheck();
 void CustomRule();
-//void WarpMode();
-//void RemoveMode();
 bool InputCheck(int num, int min, int max);
 bool Confirm();
 
@@ -35,6 +34,7 @@ int main() {
 		isRemoveMode = Confirm();
 		Init();
 		while (!gameover) {
+			cout << "Player" << currentPlayer + 1 << "'s turn!\n";
 			Insert();
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
@@ -83,7 +83,7 @@ void UpdateGrid() {
 	}
 }
 
-void WinJudge(int r, int c) {
+bool WinJudge(int r, int c) {
 	int combo = 1;
 	int currentR = r;
 	int currentC = c;
@@ -95,8 +95,7 @@ void WinJudge(int r, int c) {
 		}
 		else {
 			if (combo >= winNum) {
-				cout << "Player" << currentPlayer + 1 << " win!\n";
-				gameover = true;
+				return true;
 			}
 			r = currentR;
 			combo = 1;
@@ -128,8 +127,7 @@ void WinJudge(int r, int c) {
 		else {
 			c = currentC;
 			if (combo >= winNum) {
-				cout << "Player" << currentPlayer + 1 << " win!\n";
-				gameover = true;
+				return true;
 			}
 			combo = 1;
 			break;
@@ -162,8 +160,7 @@ void WinJudge(int r, int c) {
 		}
 		else {
 			if (combo >= winNum) {
-				cout << "Player" << currentPlayer + 1 << " win!\n";
-				gameover = true;
+				return true;
 			}
 			c = currentC;
 			r = currentR;
@@ -198,8 +195,7 @@ void WinJudge(int r, int c) {
 		}
 		else {
 			if (combo >= winNum) {
-				cout << "Player" << currentPlayer + 1 << " win!\n";
-				gameover = true;
+				return true;
 			}
 			c = currentC;
 			r = currentR;
@@ -207,6 +203,7 @@ void WinJudge(int r, int c) {
 			break;
 		}
 	}
+	return false;
 }
 
 bool DrawCheck() {
@@ -220,7 +217,6 @@ bool DrawCheck() {
 }
 
 void Insert() {
-	cout << "Player" << currentPlayer + 1 << "'s turn!\n";
 	cout << "Input column number:";
 	cin >> col;
 	if (!InputCheck(col, 1, colNum)) return;
@@ -230,8 +226,11 @@ void Insert() {
 			if (currentPlayer) {
 				grid[i][col] = 'X';
 				UpdateGrid();
-				WinJudge(i, col);
 				if (DrawCheck()) {
+					gameover = true;
+				}
+				if (WinJudge(i, col)) {
+					cout << "Player" << currentPlayer + 1 << " win!\n";
 					gameover = true;
 				}
 				break;
@@ -239,8 +238,11 @@ void Insert() {
 			else {
 				grid[i][col] = 'O';
 				UpdateGrid();
-				WinJudge(i, col);
 				if (DrawCheck()) {
+					gameover = true;
+				}
+				if (WinJudge(i, col)) {
+					cout << "Player" << currentPlayer + 1 << " win!\n";
 					gameover = true;
 				}
 				break;
@@ -252,6 +254,10 @@ void Insert() {
 		}
 	}
 	currentPlayer = !currentPlayer;
+}
+
+void Remove(float num) {
+
 }
 
 void CustomRule() {
@@ -287,16 +293,6 @@ void CustomRule() {
 		else return;
 	}
 }
-//
-//void WarpMode() {
-//	cout << "Activate warp mode?";
-//	isWarpMode = Confirm();
-//}
-//
-//void RemoveMode() {
-//	cout << "Activate remove mode?";
-//	isRemoveMode = Confirm();
-//}
 
 bool InputCheck(int num, int min, int max) {
 	if (cin.fail()) {
