@@ -12,29 +12,34 @@ bool gameover = false;
 bool currentPlayer = false;
 bool gameloop = true;
 bool isWarpMode;
-bool isDropMode;
+bool isRemoveMode;
 bool isVSCom;
 
 void Init();
 void UpdateGrid();
 void WinJudge(int r, int c);
 void Insert();
-void Replay();
-void DrawCheck();
+bool DrawCheck();
 void CustomRule();
-void WarpMode();
-bool IntInputCheck(int num, int min, int max);
+//void WarpMode();
+//void RemoveMode();
+bool InputCheck(int num, int min, int max);
+bool Confirm();
 
 int main() {
 	while (gameloop) {
 		CustomRule();
-		WarpMode();
+		cout << "Activate warp mode?";
+		isWarpMode = Confirm();
+		cout << "Activate remove mode?";
+		isRemoveMode = Confirm();
 		Init();
 		while (!gameover) {
 			Insert();
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
-		Replay();
+		cout << "Play again?";
+		if (!Confirm()) gameloop = false;
 	}
 	return 0;
 }
@@ -204,21 +209,21 @@ void WinJudge(int r, int c) {
 	}
 }
 
-void DrawCheck() {
+bool DrawCheck() {
 	for (int i = 0; i < 7; i++) { //check 1st row only
 		if (grid[0][i] == '.') {
-			return;
+			return false;
 		}
 	}
 	cout << "Draw!\n";
-	gameover = true;
+	return true;
 }
 
 void Insert() {
 	cout << "Player" << currentPlayer + 1 << "'s turn!\n";
 	cout << "Input column number:";
 	cin >> col;
-	if (!IntInputCheck(col, 1, colNum)) return;
+	if (!InputCheck(col, 1, colNum)) return;
 	col--;
 	for (int i = rowNum-1; i >= 0; i--) {
 		if (grid[i][col] == '.') {
@@ -226,14 +231,18 @@ void Insert() {
 				grid[i][col] = 'X';
 				UpdateGrid();
 				WinJudge(i, col);
-				DrawCheck();
+				if (DrawCheck()) {
+					gameover = true;
+				}
 				break;
 			}
 			else {
 				grid[i][col] = 'O';
 				UpdateGrid();
 				WinJudge(i, col);
-				DrawCheck();
+				if (DrawCheck()) {
+					gameover = true;
+				}
 				break;
 			}
 		}
@@ -245,29 +254,14 @@ void Insert() {
 	currentPlayer = !currentPlayer;
 }
 
-void Replay() {
-	while (true) {
-		cout << "Play again? Input Y/N";
-		cin >> confirm;
-		if (confirm == 'Y' || confirm == 'y') {
-			break;
-		}
-		else if (confirm == 'N' || confirm == 'n') {
-			gameloop = false;
-			break;
-		}
-	}
-}
-
 void CustomRule() {
 	while (true) {
-		cout << "Reset grid and win required? Input Y/N";
-		cin >> confirm;
-		if (confirm == 'Y' || confirm == 'y') {
+		cout << "Reset grid and win condition?";
+		if (Confirm()) {
 			while (true) {
 				cout << "Input row number(4~20):";
 				cin >> rowNum;
-				if (!IntInputCheck(rowNum, 4, 20)) {
+				if (!InputCheck(rowNum, 4, 20)) {
 					continue;
 				}
 				else break;
@@ -275,7 +269,7 @@ void CustomRule() {
 			while (true) {
 				cout << "Input colunm number(4~20):";
 				cin >> colNum;
-				if (!IntInputCheck(colNum, 4, 20)) {
+				if (!InputCheck(colNum, 4, 20)) {
 					continue;
 				}
 				else break;
@@ -283,33 +277,29 @@ void CustomRule() {
 			while (true) {
 				cout << "Input number required to win(3~20):";
 				cin >> winNum;
-				if (!IntInputCheck(winNum, 3, 20)) {
+				if (!InputCheck(winNum, 3, 20)) {
 					continue;
 				}
 				else break;
 			}
 			return;
 		}
-		else if (confirm == 'N' || confirm == 'n') {
-			return;
-		}
+		else return;
 	}
 }
+//
+//void WarpMode() {
+//	cout << "Activate warp mode?";
+//	isWarpMode = Confirm();
+//}
+//
+//void RemoveMode() {
+//	cout << "Activate remove mode?";
+//	isRemoveMode = Confirm();
+//}
 
-void WarpMode() {
-	cout << "Activate warp mode? Input Y/N";
-	cin >> confirm;
-	if (confirm == 'Y' || confirm == 'y') {
-		isWarpMode = true;
-	}
-	else if (confirm == 'N' || confirm == 'n') {
-		isWarpMode = false;
-		return;
-	}
-}
-
-bool IntInputCheck(int num, int min, int max) {
-	if (cin.fail()) { //check input
+bool InputCheck(int num, int min, int max) {
+	if (cin.fail()) {
 		cin.clear();
 		cin.ignore(100, '\n');
 		cout << "Please input number!\n";
@@ -320,4 +310,22 @@ bool IntInputCheck(int num, int min, int max) {
 		return false;
 	}
 	else return true;
+}
+
+bool Confirm() {
+	char input;
+	while (true) {
+		cout << " Please input Y/N";
+		cin >> input;
+		if (input == 'Y' || input == 'y') {
+			return true;
+		}
+		else if (input == 'N' || input == 'n') {
+			return false;
+		}
+		else {
+			cout << "Invalid input!";
+			continue;
+		}
+	}
 }
