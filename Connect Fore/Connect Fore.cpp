@@ -1,4 +1,5 @@
 #include<iostream>
+//#include<string>
 
 using namespace std;
 
@@ -11,18 +12,19 @@ int winNum = 4;
 bool gameover = false;
 bool currentPlayer = false;
 bool gameloop = true;
-bool isWarpMode;
-bool isRemoveMode;
-bool isVSCom;
+bool isWarpMode = false;
+bool isRemoveMode = false;
+bool isVSCom = false;
 
 void Init();
 void UpdateGrid();
 bool WinJudge(int r, int c);
 void Insert();
-void Remove(float col);
+void Remove();
 bool DrawCheck();
 void CustomRule();
 bool InputCheck(int num, int min, int max);
+int InputInt(int min, int max);
 bool Confirm();
 
 int main() {
@@ -35,6 +37,14 @@ int main() {
 		Init();
 		while (!gameover) {
 			cout << "Player" << currentPlayer + 1 << "'s turn!\n";
+			if (isRemoveMode) {
+				cout << "Remove a piece?";
+				if (Confirm()) {
+					cout << "Input column number to remove piece: ";
+					Remove();
+				}
+			}
+			cout << "Select column to insert piece. ";
 			Insert();
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
@@ -43,8 +53,6 @@ int main() {
 	}
 	return 0;
 }
-
-
 
 void Init() {
 	system("CLS");
@@ -217,9 +225,7 @@ bool DrawCheck() {
 }
 
 void Insert() {
-	cout << "Input column number:";
-	cin >> col;
-	if (!InputCheck(col, 1, colNum)) return;
+	col = InputInt(1, colNum);
 	col--;
 	for (int i = rowNum-1; i >= 0; i--) {
 		if (grid[i][col] == '.') {
@@ -256,67 +262,76 @@ void Insert() {
 	currentPlayer = !currentPlayer;
 }
 
-void Remove(float num) {
-
+void Remove() {
+	col = InputInt(1, colNum);
+	col--;
+	if (currentPlayer && grid[rowNum][col] == 'O') { //check if piece can be removed
+		for (int i = rowNum; i >= 0; i--) {
+			grid[i][col] = grid[i - 1][col];
+		}
+	}
+	else if (grid[rowNum][col] == 'X') {
+		for (int i = rowNum; i >= 0; i--) {
+			grid[i][col] = grid[i - 1][col];
+		}
+	}
+	else {
+		currentPlayer = !currentPlayer;
+		cout << "You can only choose the column whit your piece in bottom.\n";
+	}
+	currentPlayer = !currentPlayer;
 }
 
 void CustomRule() {
 	while (true) {
 		cout << "Reset grid and win condition?";
 		if (Confirm()) {
-			while (true) {
-				cout << "Input row number(4~20):";
-				cin >> rowNum;
-				if (!InputCheck(rowNum, 4, 20)) {
-					continue;
-				}
-				else break;
-			}
-			while (true) {
-				cout << "Input colunm number(4~20):";
-				cin >> colNum;
-				if (!InputCheck(colNum, 4, 20)) {
-					continue;
-				}
-				else break;
-			}
-			while (true) {
-				cout << "Input number required to win(3~20):";
-				cin >> winNum;
-				if (!InputCheck(winNum, 3, 20)) {
-					continue;
-				}
-				else break;
-			}
+			cout << "Set row number.";
+			rowNum = InputInt(4, 20);
+			cout << "Set column number.";
+			colNum = InputInt(4, 20);
+			cout << "Set number required to win.";
+			winNum = InputInt(3, 20);
 			return;
 		}
 		else return;
 	}
 }
 
-bool InputCheck(int num, int min, int max) {
-	if (cin.fail()) {
-		cin.clear();
-		cin.ignore(100, '\n');
-		cout << "Please input number!\n";
-		return false;
+int InputInt(int min, int max) {
+	while (true) {
+		char input[20];
+		cout << "Please input an integer between " << min << " and " << max << ":";
+		cin >> input;
+		int num;
+		if (input[0] >= '0' && input[0] <= '9' && input[1] == NULL) {
+			num = input[0] - 48;
+			if (num >= min && num <= max) {
+				return num;
+			}
+		}
+		else if (input[0] >= '0' && input[0] <= '9' && input[1] >= '0' && input[1] <= '9' && input[2] == NULL) {
+			num = (input[0] - 48) * 10 + input[1] - 48;
+			if (num >= min && num <= max) {
+				return num;
+			}
+		}
+		else {
+			cout << "Invalid input!";
+			continue;
+		}
 	}
-	else if (num<min || num>max) {
-		cout << "Invalid number!\n";
-		return false;
-	}
-	else return true;
 }
 
 bool Confirm() {
-	char input;
 	while (true) {
+		char input[20];
 		cout << " Please input Y/N";
 		cin >> input;
-		if (input == 'Y' || input == 'y') {
+		if (input[0] == 'Y' || input[0] == 'y' && input[1] == NULL) {
 			return true;
 		}
-		else if (input == 'N' || input == 'n') {
+		else if (input[0] == 'N' || input[0] == 'n' && input[1] == NULL) {
 			return false;
 		}
 		else {
