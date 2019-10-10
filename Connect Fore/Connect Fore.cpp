@@ -40,12 +40,18 @@ int main() {
 			if (isRemoveMode) {
 				cout << "Remove a piece?";
 				if (Confirm()) {
-					cout << "Input column number to remove piece: ";
+					cout << "Input column number to remove piece:";
 					Remove();
 				}
+				else {
+					cout << "Select column to insert piece. ";
+					Insert();
+				}
 			}
-			cout << "Select column to insert piece. ";
-			Insert();
+			else {
+				cout << "Select column to insert piece. ";
+				Insert();
+			}
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
 		cout << "Play again?";
@@ -232,7 +238,7 @@ void Insert() {
 			if (currentPlayer) {
 				grid[i][col] = 'X';
 				UpdateGrid();
-				if (DrawCheck()) {
+				if (DrawCheck() && !isRemoveMode) {
 					gameover = true;
 				}
 				if (WinJudge(i, col)) {
@@ -244,7 +250,7 @@ void Insert() {
 			else {
 				grid[i][col] = 'O';
 				UpdateGrid();
-				if (DrawCheck()) {
+				if (DrawCheck() && !isRemoveMode) {
 					gameover = true;
 				}
 				if (WinJudge(i, col)) {
@@ -263,21 +269,62 @@ void Insert() {
 }
 
 void Remove() {
+	int winner[20];
+	int t = 0;
 	col = InputInt(1, colNum);
 	col--;
-	if (currentPlayer && grid[rowNum][col] == 'O') { //check if piece can be removed
-		for (int i = rowNum; i >= 0; i--) {
-			grid[i][col] = grid[i - 1][col];
+	if (!currentPlayer && grid[rowNum -1][col] == 'O') { //check if piece can be removed
+		for (int i = rowNum - 1; i >= 0; i--) { //loop from bottom to top
+			if (i == 0) {	//check if is top
+				grid[i][col] = '.';
+			}
+			else {	//drop piece
+				grid[i][col] = grid[i - 1][col];
+				if (WinJudge(i, col) && grid[i][col] != '.') { //check if someone win
+					if (grid[i][col] == 'O') { winner[t] = 1;}	//check who is winner
+					else { winner[t] = 2;}
+					t++;
+				}
+			}
 		}
+		UpdateGrid();
 	}
-	else if (grid[rowNum][col] == 'X') {
-		for (int i = rowNum; i >= 0; i--) {
-			grid[i][col] = grid[i - 1][col];
+	else if (currentPlayer && grid[rowNum - 1][col] == 'X') {
+		for (int i = rowNum - 1; i >= 0; i--) {
+			if (i == 0) {
+				grid[i][col] = '.';
+			}
+			else {
+				grid[i][col] = grid[i - 1][col];
+				if (WinJudge(i, col) && grid[i][col] != '.') { //check if someone win
+					if (grid[i][col] == 'O') { winner[t] = 1; }	//check who is winner
+					else { winner[t] = 2; }
+					t++;
+				}
+			}
 		}
+		UpdateGrid();
 	}
 	else {
 		currentPlayer = !currentPlayer;
 		cout << "You can only choose the column whit your piece in bottom.\n";
+	}
+	for (int i = 0; i < 19; i++) {
+		if (winner[i] >= 0) {
+			if (winner[i + 1] >= 0 && winner[i] != winner[i + 1]) {
+				cout << "Draw!\n";
+				gameover = true;
+				break;
+			}
+			else {
+				cout << "Player" << winner[i]<< " win!\n";
+				gameover = true;
+				break;
+			}
+		}
+		else {
+			break;
+		}
 	}
 	currentPlayer = !currentPlayer;
 }
