@@ -26,6 +26,7 @@ void CustomRule();
 bool InputCheck(int num, int min, int max);
 int InputInt(int min, int max);
 bool Confirm();
+int Situation();
 
 int main() {
 	while (gameloop) {
@@ -51,6 +52,7 @@ int main() {
 			else {
 				cout << "Select column to insert piece. ";
 				Insert();
+				cout << Situation() << endl;
 			}
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
@@ -338,14 +340,14 @@ void CustomRule() {
 			cout << "Set column number.";
 			colNum = InputInt(4, 20);
 			cout << "Set number required to win.";
-			winNum = InputInt(3, 20);
+			winNum = InputInt(3, Min(rowNum, colNum));
 			return;
 		}
 		else return;
 	}
 }
 
-int InputInt(int min, int max) {
+int InputInt(int min, int max) { //Check input
 	while (true) {
 		char input[20];
 		cout << "Please input an integer between " << min << " and " << max << ":";
@@ -370,7 +372,7 @@ int InputInt(int min, int max) {
 	}
 }
 
-bool Confirm() {
+bool Confirm() {	//Yes or no 
 	while (true) {
 		char input[20];
 		cout << " Please input Y/N";
@@ -386,4 +388,135 @@ bool Confirm() {
 			continue;
 		}
 	}
+}
+
+int Min(int a, int b) {
+	if (a < b) {
+		return a;
+	}
+	else {
+		return b;
+	}
+}
+
+int Situation() {	//Score current situation
+	int score = 0;
+	for (int r = 0; r < rowNum; r++) {
+		for (int c = 0; c < colNum; c++) {
+			if (grid[r][c] == '.') { continue; } //pruning
+			int spaceOnV = 1, spaceOnH = 1, spaceOnD1 = 1, spaceOnD2 = 1;
+			int i = 0;
+			while (true) {	//space on vertical upward
+				i++;
+				if (grid[r - i][c] == '.') {
+					spaceOnV++;
+				}
+				else{
+					i = 0;
+					break;
+				}
+			}
+			while (true) {	//space on vertical downward
+				i++;
+				if (grid[r][c] == grid[r + i][c]) {
+					spaceOnV++;
+				}
+				else{
+					i = 0;
+					break;
+				}
+			}
+
+			while (true) {	//space on horizental left
+				i++;
+				if (grid[r][c] == grid[r][c - i] || grid[r][c - i] == '.') {
+					spaceOnH++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+			while (true) {	//space on horizontal right
+				i++;
+				if (grid[r][c] == grid[r][c + i] || grid[r][c + i] == '.') {
+					spaceOnH++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+
+			while (true) {	//space on diagnal1 lower left
+				i++;
+				if (grid[r][c] == grid[r + i][c - i] || grid[r + i][c - i] == '.') {
+					spaceOnD1++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+			while (true) {	//space on diagnal1 upper right
+				i++;
+				if (grid[r][c] == grid[r - i][c + i] || grid[r - i][c + i] == '.') {
+					spaceOnD1++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+
+			while (true) {	//space on diagnal2 upper left
+				i++;
+				if (grid[r][c] == grid[r - i][c - i] || grid[r - i][c - i] == '.') {
+					spaceOnD2++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+			while (true) {	//space on diagnal2 lower right
+				i++;
+				if (grid[r][c] == grid[r + i][c + i] || grid[r + i][c + i] == '.') {
+					spaceOnD2++;
+				}
+				else {
+					i = 0;
+					break;
+				}
+			}
+			for (int i = 1; i <= winNum; i++) {
+				if (grid[r][c] != grid[r - 1][c]) {
+					if (grid[r][c] == 'X' && grid[r][c] == grid[r + i][c] && spaceOnV >= winNum) { score++; }
+				}
+				if (grid[r][c] != grid[r][c - 1]) {
+					if (grid[r][c] == 'X' && grid[r][c] == grid[r][c + i] && spaceOnH >= winNum) { score++; }
+				}
+				if (grid[r][c] != grid[r + 1][c - 1]) {
+					if (grid[r][c] == 'X' && grid[r][c] == grid[r - i][c + i] && spaceOnD1 >= winNum) { score++; }
+				}
+				if (grid[r][c] != grid[r - 1][c - 1]) {
+					if (grid[r][c] == 'X' && grid[r][c] == grid[r + i][c + i] && spaceOnD2 >= winNum) { score++; }
+				}
+				if (grid[r][c] != grid[r - 1][c]) {
+					if (grid[r][c] == 'O' && grid[r][c] == grid[r + i][c] && spaceOnV >= winNum) { score--; }
+				}
+				if (grid[r][c] != grid[r][c - 1]) {
+					if (grid[r][c] == 'O' && grid[r][c] == grid[r][c + i] && spaceOnH >= winNum) { score--; }
+				}
+				if (grid[r][c] != grid[r + 1][c - 1]) {
+					if (grid[r][c] == 'O' && grid[r][c] == grid[r - i][c + i] && spaceOnD1 >= winNum) { score--; }
+				}
+				if (grid[r][c] != grid[r - 1][c - 1]) {
+					if (grid[r][c] == 'O' && grid[r][c] == grid[r + i][c + i] && spaceOnD2 >= winNum) { score--; }
+				}
+			}
+			if (WinJudge(r, c)) { score += 100; }
+		}
+	}
+	return score;
 }
