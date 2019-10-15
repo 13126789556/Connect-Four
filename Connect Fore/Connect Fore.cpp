@@ -26,6 +26,7 @@ void CustomRule();
 bool InputCheck(int num, int min, int max);
 int InputInt(int min, int max);
 bool Confirm();
+int Min(int a, int b);
 int Situation();
 
 int main() {
