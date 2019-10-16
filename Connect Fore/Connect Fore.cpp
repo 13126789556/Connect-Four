@@ -14,7 +14,7 @@ bool currentPlayer = false;
 bool gameloop = true;
 bool isWarpMode = false;
 bool isRemoveMode = false;
-bool isVSCom = false;
+bool isAIMode = false;
 
 void Init();
 void UpdateGrid();
@@ -27,11 +27,18 @@ bool InputCheck(int num, int min, int max);
 int InputInt(int min, int max);
 bool Confirm();
 int Min(int a, int b);
-int Situation();
+int Max(int a, int b);
+int Evaluation();
+bool AIDo(int c);
+void AIUndo(int c);
+int MinMax(int depth);
+
 
 int main() {
 	while (gameloop) {
 		CustomRule();
+		cout << "Play with AI?";
+		isAIMode = Confirm();
 		cout << "Activate warp mode?";
 		isWarpMode = Confirm();
 		cout << "Activate remove mode?";
@@ -53,14 +60,15 @@ int main() {
 			else {
 				cout << "Select column to insert piece. ";
 				Insert();
-				cout << Situation() << endl;
+				//cout << MinMax(6) << endl;
+				cout << MinMax(2) << endl;
 			}
 		}
 		//cout << "Player" << currentPlayer + 1 << " win!\n";
 		cout << "Play again?";
 		if (!Confirm()) gameloop = false;
 	}
-	return 0;
+	//return 0;
 }
 
 void Init() {
@@ -167,6 +175,7 @@ bool WinJudge(int r, int c) {
 		}
 	}
 	while (true) { //judge diagonal1 upper right
+
 		c++;
 		r--;
 		if (isWarpMode && c >= colNum) {
@@ -400,124 +409,239 @@ int Min(int a, int b) {
 	}
 }
 
-int Situation() {	//Score current situation
+int Max(int a, int b) {
+	if (a < b) {
+		return b;
+	}
+	else {
+		return a;
+	}
+}
+
+int Evaluation() {	//Score current situation
 	int score = 0;
 	for (int r = 0; r < rowNum; r++) {
 		for (int c = 0; c < colNum; c++) {
 			if (grid[r][c] == '.') { continue; } //pruning
 			int spaceOnV = 1, spaceOnH = 1, spaceOnD1 = 1, spaceOnD2 = 1;
 			int i = 0;
-			while (true) {	//space on vertical upward
-				i++;
+			for (i = 1; spaceOnV < winNum; i++) {	//space on vertical upward
 				if (grid[r - i][c] == '.') {
 					spaceOnV++;
 				}
 				else{
-					i = 0;
 					break;
 				}
 			}
-			while (true) {	//space on vertical downward
-				i++;
+			for (i = 1; spaceOnV < winNum; i++) {	//space on vertical downward
 				if (grid[r][c] == grid[r + i][c]) {
 					spaceOnV++;
 				}
 				else{
-					i = 0;
 					break;
 				}
 			}
-
-			while (true) {	//space on horizental left
-				i++;
+			for (i = 1; spaceOnH < winNum; i++) {	//space on horizental left
 				if (grid[r][c] == grid[r][c - i] || grid[r][c - i] == '.') {
 					spaceOnH++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-			while (true) {	//space on horizontal right
-				i++;
+			for (i = 1; spaceOnH < winNum; i++) {	//space on horizontal right
 				if (grid[r][c] == grid[r][c + i] || grid[r][c + i] == '.') {
 					spaceOnH++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-
-			while (true) {	//space on diagnal1 lower left
-				i++;
+			for (i = 1; spaceOnD1 < winNum; i++) {	//space on diagnal1 lower left
 				if (grid[r][c] == grid[r + i][c - i] || grid[r + i][c - i] == '.') {
 					spaceOnD1++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-			while (true) {	//space on diagnal1 upper right
-				i++;
+			for (i = 1; spaceOnD1 < winNum; i++) {	//space on diagnal1 upper right
 				if (grid[r][c] == grid[r - i][c + i] || grid[r - i][c + i] == '.') {
 					spaceOnD1++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-
-			while (true) {	//space on diagnal2 upper left
-				i++;
+			for (i = 1; spaceOnD2 < winNum; i++) {	//space on diagnal2 upper left
 				if (grid[r][c] == grid[r - i][c - i] || grid[r - i][c - i] == '.') {
 					spaceOnD2++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-			while (true) {	//space on diagnal2 lower right
-				i++;
+			for (i = 1; spaceOnD2 < winNum; i++) {	//space on diagnal2 lower right
 				if (grid[r][c] == grid[r + i][c + i] || grid[r + i][c + i] == '.') {
 					spaceOnD2++;
 				}
 				else {
-					i = 0;
 					break;
 				}
 			}
-			for (int i = 1; i <= winNum; i++) {
-				if (grid[r][c] != grid[r - 1][c]) {
-					if (grid[r][c] == 'X' && grid[r][c] == grid[r + i][c] && spaceOnV >= winNum) { score++; }
+			for (int i = 1; i <= winNum; i++) {	//P2's combo on vertical downward
+				if (grid[r][c] != grid[r - 1][c]
+					&& grid[r][c] == 'X'
+					&& grid[r][c] == grid[r + i][c]
+					&& spaceOnV >= winNum) {
+					score += i;
 				}
-				if (grid[r][c] != grid[r][c - 1]) {
-					if (grid[r][c] == 'X' && grid[r][c] == grid[r][c + i] && spaceOnH >= winNum) { score++; }
-				}
-				if (grid[r][c] != grid[r + 1][c - 1]) {
-					if (grid[r][c] == 'X' && grid[r][c] == grid[r - i][c + i] && spaceOnD1 >= winNum) { score++; }
-				}
-				if (grid[r][c] != grid[r - 1][c - 1]) {
-					if (grid[r][c] == 'X' && grid[r][c] == grid[r + i][c + i] && spaceOnD2 >= winNum) { score++; }
-				}
-				if (grid[r][c] != grid[r - 1][c]) {
-					if (grid[r][c] == 'O' && grid[r][c] == grid[r + i][c] && spaceOnV >= winNum) { score--; }
-				}
-				if (grid[r][c] != grid[r][c - 1]) {
-					if (grid[r][c] == 'O' && grid[r][c] == grid[r][c + i] && spaceOnH >= winNum) { score--; }
-				}
-				if (grid[r][c] != grid[r + 1][c - 1]) {
-					if (grid[r][c] == 'O' && grid[r][c] == grid[r - i][c + i] && spaceOnD1 >= winNum) { score--; }
-				}
-				if (grid[r][c] != grid[r - 1][c - 1]) {
-					if (grid[r][c] == 'O' && grid[r][c] == grid[r + i][c + i] && spaceOnD2 >= winNum) { score--; }
-				}
+				else break;
 			}
-			if (WinJudge(r, c)) { score += 100; }
+			for (int i = 1; i <= winNum; i++) {	//P2's combo on horizontal right
+				if (grid[r][c] != grid[r][c - 1]
+					&& grid[r][c] == 'X'
+					&& grid[r][c] == grid[r][c + i]
+					&& spaceOnH >= winNum) {
+					score += i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) {	//P2's combo on diagnal1 upper right
+				if (grid[r][c] != grid[r + 1][c - 1]
+					&& grid[r][c] == 'X'
+					&& grid[r][c] == grid[r - i][c + i]
+					&& spaceOnD1 >= winNum) {
+					score += i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) { //P2's combo on diagnal2 lower right
+				if (grid[r][c] != grid[r - 1][c - 1]
+					&& grid[r][c] == 'X'
+					&& grid[r][c] == grid[r + i][c + i]
+					&& spaceOnD2 >= winNum) {
+					score += i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) {	//P1's combo on vertical downward
+				if (grid[r][c] != grid[r - 1][c]
+					&& grid[r][c] == 'O'
+					&& grid[r][c] == grid[r + i][c]
+					&& spaceOnV >= winNum) {
+					score -= i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) {	//P1's combo on horizontal right
+				if (grid[r][c] != grid[r][c - 1]
+					&& grid[r][c] == 'O'
+					&& grid[r][c] == grid[r][c + i]
+					&& spaceOnH >= winNum) {
+					score -= i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) {	//P1's combo on diagnal1 upper right
+				if (grid[r][c] != grid[r + 1][c - 1]
+					&& grid[r][c] == 'O'
+					&& grid[r][c] == grid[r - i][c + i]
+					&& spaceOnD1 >= winNum) {
+					score -= i;
+				}
+				else break;
+			}
+			for (int i = 1; i <= winNum; i++) {	//P1's combo on diagnal2 lower right
+				if (grid[r][c] != grid[r - 1][c - 1]
+					&& grid[r][c] == 'O'
+					&& grid[r][c] == grid[r + i][c + i]
+					&& spaceOnD2 >= winNum) {
+					score -= i;
+				}
+				else break;
+			}
+			//if (WinJudge(r, c)) { score += 100; }
 		}
 	}
 	return score;
+}
+
+bool AIDo(int c) {
+	for (int i = rowNum - 1; i >= 0; i--) {
+		if (grid[i][c] == '.') {
+			if (currentPlayer) {
+				grid[i][c] = 'X';
+				currentPlayer = !currentPlayer; 
+				if (WinJudge(i, c)) {
+					gameover = true;
+				}
+				return true;
+			}
+			else {
+				grid[i][c] = 'O';
+				currentPlayer = !currentPlayer;
+				if (WinJudge(i, c)) {
+					gameover = true;
+				}
+				return true;
+			}
+		}
+		else if (i == 0) {
+			return false;
+		}
+	}
+}
+
+void AIUndo(int c) {
+	gameover = false;
+	for (int i = rowNum - 1; i >= 0; i--) {
+		if (i == 0 || grid[i][c] != '.') {
+			grid[i][c] = '.';
+			return;
+		}
+		if (grid[i][c] == '.') {
+			grid[i + 1][c] = '.';
+			//currentPlayer = !currentPlayer;
+			return;
+		}
+	}
+}
+
+int MinMax(int depth) {	//try to use minimax algorithm
+	int bestvalue = 0, value = 0;
+	//if () { return; }
+	if (depth <= 0) {
+		//cout << Evaluation() << endl;
+		return Evaluation();
+	}
+	//if (gameover = true) {
+	//	return bestvalue;
+	//}
+	//for (int i = 0; i < colNum; i++) {
+	//	if (AIDo(i) && bestvalue < Evaluation()) {
+	//		bestvalue = Evaluation();
+	//		value = i;
+	//		AIUndo(i);
+	//	}
+	//}
+	if (currentPlayer) {
+		bestvalue = -100000;
+	}
+	else {
+		bestvalue = 100000;
+	}
+	for (int i = 0; i < colNum; i++) {
+		if (AIDo(i)) {
+			value = MinMax(depth - 1);
+			AIUndo(i);
+		}
+		if (currentPlayer) {
+			bestvalue = Max(value, bestvalue);
+		}
+		else {
+			bestvalue = Min(value, bestvalue);
+		}
+	}
+	return bestvalue;
 }
