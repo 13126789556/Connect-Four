@@ -14,7 +14,7 @@ bool currentPlayer = false;
 bool gameloop = true;
 bool isWarpMode = false;
 bool isRemoveMode = false;
-bool isAIMode = false;
+bool isAIMode = false;	//AI cannot work with remove mode and stupid in warp mode
 
 void Init();
 void UpdateGrid();
@@ -72,13 +72,15 @@ int main() {
 			else if (isAIMode) {
 				cout << "Select column to insert piece. ";
 				Insert();
-				//AIInsert();
 				if (gameover) {
+					cout << Evaluation() << endl;
 					break;
 				}
 				MinMax(4);
 				AIDo(col);
 				UpdateGrid();
+				cout << Evaluation() << endl;
+				cout << "AI set in column " << col + 1 << endl;
 				if (gameover) {
 					cout << "You lose!\n";
 				}
@@ -86,15 +88,11 @@ int main() {
 			else {
 				cout << "Select column to insert piece. ";
 				Insert();
-				//cout << MinMax(6) << endl;
-				//cout << MinMax(2) << endl;
 			}
 		}
-		//cout << "Player" << currentPlayer + 1 << " win!\n";
 		cout << "Play again?";
 		if (!Confirm()) gameloop = false;
 	}
-	//return 0;
 }
 
 void Init() {
@@ -449,6 +447,14 @@ int Evaluation() {	//Score current situation
 	for (int r = 0; r < rowNum; r++) {
 		for (int c = 0; c < colNum; c++) {
 			if (grid[r][c] == '.') { continue; } //pruning
+			if (WinJudge(r, c)) {
+				if (grid[r][c] == 'X') {
+					return 2000000000;
+				}
+				if (grid[r][c] == 'O') {
+					return -2000000000;
+				}
+			}
 			int spaceOnV = 1, spaceOnH = 1, spaceOnD1 = 1, spaceOnD2 = 1;
 			int i = 0;
 			for (i = 1; spaceOnV < winNum; i++) {	//space on vertical upward
@@ -520,7 +526,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'X'
 					&& grid[r][c] == grid[r + i][c]
 					&& spaceOnV >= winNum) {
-					score += Pow(5, i);
+					score += Pow(10, i);
 				}
 				else break;
 			}
@@ -529,7 +535,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'X'
 					&& grid[r][c] == grid[r][c + i]
 					&& spaceOnH >= winNum) {
-					score += Pow(5, i);
+					score += Pow(10, i);
 				}
 				else break;
 			}
@@ -538,7 +544,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'X'
 					&& grid[r][c] == grid[r - i][c + i]
 					&& spaceOnD1 >= winNum) {
-					score += Pow(5, i);
+					score += Pow(10, i);
 				}
 				else break;
 			}
@@ -547,7 +553,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'X'
 					&& grid[r][c] == grid[r + i][c + i]
 					&& spaceOnD2 >= winNum) {
-					score += Pow(5, i);
+					score += Pow(10, i);
 				}
 				else break;
 			}
@@ -556,7 +562,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'O'
 					&& grid[r][c] == grid[r + i][c]
 					&& spaceOnV >= winNum) {
-					score -= Pow(5, i);
+					score -= Pow(10, i);
 				}
 				else break;
 			}
@@ -565,7 +571,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'O'
 					&& grid[r][c] == grid[r][c + i]
 					&& spaceOnH >= winNum) {
-					score -= Pow(5, i);
+					score -= Pow(10, i);
 				}
 				else break;
 			}
@@ -574,7 +580,7 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'O'
 					&& grid[r][c] == grid[r - i][c + i]
 					&& spaceOnD1 >= winNum) {
-					score -= Pow(5, i);
+					score -= Pow(10, i);
 				}
 				else break;
 			}
@@ -583,12 +589,10 @@ int Evaluation() {	//Score current situation
 					&& grid[r][c] == 'O'
 					&& grid[r][c] == grid[r + i][c + i]
 					&& spaceOnD2 >= winNum) {
-					score -= Pow(5, i);
+					score -= Pow(10, i);
 				}
 				else break;
 			}
-			if (WinJudge(r, c) && grid[r][c] == 'X') { score += 100000000; };
-			if (WinJudge(r, c) && grid[r][c] == 'O') { score -= 100000000; };
 		}
 	}
 	return score;
@@ -621,22 +625,21 @@ bool AIDo(int c) {	//Artificial Idiot
 }
 
 void AIUndo(int c) {
-	gameover = false;
+	currentPlayer = !currentPlayer;
+	//gameover = false;
 	for (int i = rowNum - 1; i >= 0; i--) {
 		if (i == 0 && grid[i][c] != '.') {
 			grid[i][c] = '.';
-			currentPlayer = !currentPlayer;
 			return;
 		}
 		if (grid[i][c] == '.') {
 			grid[i + 1][c] = '.';
-			currentPlayer = !currentPlayer;
 			return;
 		}
 	}
 }
 
-int MinMax(int depth) {	//try to use minimax algorithm
+int MinMax(int depth) {	//try to implement minimax algorithm // TODO alpha beta pruning, debug
 	int bestvalue = 0, value = 0;
 	if (depth <= 0) {
 		return Evaluation();
@@ -645,25 +648,26 @@ int MinMax(int depth) {	//try to use minimax algorithm
 		return Evaluation();
 	}
 	if (currentPlayer) {
-		bestvalue = -1000000000;
+		bestvalue = -2000000000;
 	}
 	else {
-		bestvalue = 1000000000;
+		bestvalue = 2000000000;
 	}
 	for (int i = 0; i < colNum; i++) {
 		if (AIDo(i)) {
 			value = MinMax(depth - 1);
 			AIUndo(i);
 			if (currentPlayer && bestvalue < value) {
-				bestvalue = value;
+				bestvalue = value;	// max of value and bestvalue
 				col = i;
 			}
 			else if (!currentPlayer && bestvalue > value) {
-				bestvalue = value;
+				bestvalue = value;	// min of value and bestvalue
 				col = i;
 			}
 		}
 	}
+	gameover = false;
 	return bestvalue;
 }
 
