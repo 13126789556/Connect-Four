@@ -73,10 +73,10 @@ int main() {
 				cout << "Select column to insert piece. ";
 				Insert();
 				if (gameover) {
-					cout << Evaluation() << endl;
+					//cout << Evaluation() << endl;
 					break;
 				}
-				MinMax(4);
+				MinMax(6);
 				AIDo(col);
 				UpdateGrid();
 				cout << Evaluation() << endl;
