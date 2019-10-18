@@ -72,8 +72,7 @@ int main() {
 			else if (isAIMode) {
 				cout << "Select column to insert piece. ";
 				Insert();
-				if (gameover) {
-					//cout << Evaluation() << endl;
+				if (gameover) { 
 					break;
 				}
 				MinMax(6);
