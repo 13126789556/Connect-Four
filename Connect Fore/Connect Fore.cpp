@@ -78,7 +78,6 @@ int main() {
 				MinMax(6);
 				AIDo(col);
 				UpdateGrid();
-				cout << Evaluation() << endl;
 				cout << "AI set in column " << col + 1 << endl;
 				if (gameover) {
 					cout << "You lose!\n";
